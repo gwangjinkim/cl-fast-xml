@@ -1,6 +1,10 @@
+(ql:quickload :uiop)
+(ql:quickload :rove)
+
 (defpackage cl-fast-xml/tests/main
   (:use :cl
         :cl-fast-xml
+	:uiop
         :rove))
 (in-package :cl-fast-xml/tests/main)
 

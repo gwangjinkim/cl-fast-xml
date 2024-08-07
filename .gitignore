@@ -1,0 +1,59 @@
+# Byte-compiled / compiled files
+*.fasl
+*.fas
+*.ufsl
+*.lib
+*.x86f
+*.sparcf
+*.ppcf
+*.nfasl
+*.dfsl
+*.pfsl
+*.d64fsl
+*.dx64fsl
+*.64x64fsl
+*.faso
+
+# ASDF output
+build/
+
+# SBCL specific
+*.fasl
+*.sbcl-source-registry-cache
+sbclrc
+
+# CCL specific
+ccl-bootstrapping.log
+dx86cl64
+ccl
+
+# Emacs backup files
+*~
+\#*\#
+.\#*
+
+# Emacs directories
+/.emacs.d/
+.elc
+
+# SLIME
+slime-repl-history
+slime-fancy.elc
+
+# Common Lisp Package Manager (CLPM)
+.clpm/
+
+# Roswell
+.roswell/
+
+# Quicklisp
+/quicklisp/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.temp
+*.tmp
+*.swp
