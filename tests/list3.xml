@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<list>
+  <child attr="a1">c1</child>
+  <child attr="a2"/>
+  <child attr="a3">c3</child>
+</list>

@@ -13,21 +13,23 @@
   "Python's `join` function for strings and list of strings."
   (format nil (format nil "~a~a~a" "~{~a~^" sep "~}") lst))
 
-(defun split (str &key (sep " "))
-  "Python's `split` function for strings handling regex patterns."
+(defun rsplit (str &key (sep " "))
+  "Python-like `split` with regex separator."
   (let ((result '())
 	(start 0)
 	(matches (cl-ppcre:all-matches sep str)))
-    (loop for (match-start match-end) on matches by #'cddr
-	  do (progn
-	       (push (if (= (- match-start start) 0)
-			 ""
-			 (subseq str start match-start))
-		     result)
-	       (setf start match-end))
-	  finally (progn
-		    (push (subseq str match-end (length str)) result)
-		    (return (nreverse result))))))
+    (if (null matches)
+	(list str)
+	(loop for (match-start match-end) on matches by #'cddr
+	      do (progn
+		   (push (if (= (- match-start start) 0)
+			     ""
+			     (subseq str start match-start))
+			 result)
+		   (setf start match-end))
+	      finally (progn
+			(push (subseq str match-end (length str)) result)
+			(return (nreverse result)))))))
 #|
 ;; at the end, I didn't used these definitions
 
@@ -99,7 +101,7 @@
 (defun defs-to-hash (def-list)
   (let ((def-hash (make-hash-table :test 'equal)))
     (loop for def in def-list
-	  do (let ((items (cl-ppcre:split "\\." def))
+	  do (let ((items (rsplit def :sep "\\."))
 		   (keys '()))
 	       (loop for item in items
 		     do (progn
@@ -322,19 +324,44 @@
 (defun add-xml-head (xml-str)
   (format nil "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>~%~%~a" xml-str))
 
+(defun to-compact (str)
+  (cl-ppcre:regex-replace-all ">\\n *<" str "><"))
+
 (defun lists-to-compact-xml (xml-list)
-  (add-xml-head (cl-ppcre:regex-replace-all ">\n *<" (lists-to-xml-content xml-list) "><")))
+  (add-xml-head (to-compact (lists-to-xml-content xml-list))))
 
 (defun lists-to-xml (xml-list)
   (add-xml-head (lists-to-xml-content xml-list)))
 
 (defun string-or-symbol-p (x)
-  (or (stringp x) (symbolp x)))
+  (or (stringp x)
+      (and (symbolp x) (not (null x)))))
 
 (defun attributep (node)
   (and (consp node)
        (string-or-symbol-p (car node))
        (string-or-symbol-p (cdr node))))
+
+;; Racket is symbol case-sensitive, but Common Lisp is not!
+;; In Common Lisp, for preserving case, one has to do |Haha|
+;; and can transform it to string by (symbol-name '|Haha|) to "Haha".
+;; maybe it would be madness to make Common Lisp for the reading case-sensitive for its symbols.
+
+(defun ensure-string (x)
+  "If x is a symbol, make a lowercase string out of it. Otherwise leave it."
+  (if (stringp x)
+      x
+      (string-downcase (format nil "~a" (symbol-name x)))))
+
+(defun process-attributes (attributes)
+  (with-output-to-string (attributes-port)
+    (labels ((%process-attributes (attributes)
+	       (when attributes
+		 (format attributes-port " ~a=\"~a\""
+			 (ensure-string (caar attributes))
+			 (to-special-chars (ensure-string (cdar attributes)))) ;; ensure cdar is a string
+		 (%process-attributes (cdr attributes)))))
+      (%process-attributes attributes))))
 
 (defun lists-to-xml-content (xml-list)
   (with-output-to-string (out)
@@ -347,12 +374,7 @@
 		   (format stream "~a<~a~a"
 			   prefix-spaces
 			   (car nodes)
-			   (with-output-to-string (attributes-port)
-			     (labels ((process-attributes (attributes)
-					(when attributes
-					  (format attributes-port " ~a=\"~a\"" (caar attributes) (to-special-chars (cdar attributes)))
-					  (process-attributes (cdr attributes)))))
-			       (process-attributes attributes))))
+			   (process-attributes attributes))
 		   (cond ((null children) (format stream "/>~%"))
 			 (t (format stream ">")
 			    (if value-children

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<H1 color="red" height="5">
+  <H2 color="black">
+    <H3 color="pink">Simple XML</H3>
+  </H2>
+  <H2 color="red">
+    <H3 color="yellow">Peace</H3>
+  </H2>
+</H1>
